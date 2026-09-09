@@ -2,16 +2,27 @@
 
 ## First-time deploy to GitHub Pages
 
-1. Create the repository and push. The `base` default assumes it is called `pt-ops`; any other name
-   works too, because the workflow sets `BASE_PATH` from the repository name.
-2. In the repository, go to **Settings → Pages** and set **Source** to **GitHub Actions**. Without
-   this the workflow fails at the deploy step.
-3. Push to `main`. The workflow type-checks, builds and publishes.
-4. The URL is `https://<user>.github.io/<repo>/`.
+The live deployment is <https://tobbou.github.io/pt-ops/>.
 
-A private repository can publish Pages on a paid GitHub plan; on the free plan the repository has
-to be public for Pages to serve. Nothing in this app is sensitive, but the training log is not
-published either way: it lives only in the browser.
+1. **The repository must be public**, unless the account is on GitHub Pro, Team or Enterprise.
+   Pages does not serve private repositories on the Free plan, and the failure is not obvious: the
+   build succeeds and `actions/configure-pages` fails with a bare `Not Found`. Enabling Pages
+   through the API on a private repository on Free returns
+   `422 Your current plan does not support GitHub Pages for this repository`, which is the honest
+   version of the same message. Flip visibility with
+   `gh repo edit <owner>/<repo> --visibility public --accept-visibility-change-consequences`.
+2. Create the repository and push. The `base` default assumes it is called `pt-ops`; any other name
+   works too, because the workflow sets `BASE_PATH` from the repository name.
+3. Set **Settings → Pages → Source** to **GitHub Actions**, or from the CLI:
+   `gh api -X POST repos/<owner>/<repo>/pages -f build_type=workflow`.
+4. Push to `main`, or re-run the workflow if it already failed at step 3:
+   `gh run rerun <run-id> --failed`.
+5. The URL is `https://<user>.github.io/<repo>/`.
+
+Publishing the source publishes no data. There are no keys in the repository, and the training log
+lives only in the browser that recorded it. If the source itself has to stay private, host it on
+Cloudflare Pages instead, which builds from a private GitHub repository on its free plan; set
+`BASE_PATH=/` in that case.
 
 ## Installing it on a phone
 
@@ -62,6 +73,7 @@ require a secure context, and without them it is a website rather than an app.
 | Symptom | Cause | Fix |
 | --- | --- | --- |
 | Blank page after deploy, 404s on the JS bundle | `BASE_PATH` does not match the served path | Rebuild with the right `BASE_PATH`; check the manifest's `start_url` matches |
+| `configure-pages` fails with `Not Found`, build itself was green | Pages is not enabled, usually because the repository is private on a Free plan | See step 1 of first-time deploy |
 | No install option in Chrome | Not HTTPS, or the manifest icons failed to load | Check the manifest in DevTools → Application; run `npm run icons` if the PNGs are missing |
 | Screen dims mid-workout | Wake Lock unsupported (iOS below 16.4) or denied on low battery | Nothing to fix in the app; Settings names the limitation |
 | Silent timer on iPhone | Audio context suspended, or the ring/silent switch | Audio unlocks on the tap that starts the workout; check the hardware switch |

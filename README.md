@@ -7,6 +7,8 @@ training log with streaks and body-weight tracking.
 It exists as an alternative to a subscription fitness app: everything runs on the device, there is
 no account, no backend and no network traffic after the first load.
 
+**Live: https://tobbou.github.io/pt-ops/**. Open it on a phone and add it to the home screen.
+
 ## Why it is built this way
 
 - **No images or video.** Every exercise animation is drawn from joint angles by a small forward
@@ -60,6 +62,10 @@ Push to `main`. The [Pages workflow](.github/workflows/deploy.yml) type-checks, 
 `BASE_PATH` set from the repository name, and publishes `dist/`. See
 [Docs/Operations.md](Docs/Operations.md) for first-time setup and for hosting somewhere other than
 GitHub Pages.
+
+The repository is public because GitHub Pages does not serve private repositories on the Free
+plan. Nothing sensitive is published by that: there are no keys in the repository, and the training
+log never leaves the device it was recorded on.
 
 ## Documentation
 
