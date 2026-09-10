@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react'
-import { Facing, Layer, buildGeometry } from '../lib/figure-geometry'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Facing, Layer, buildGeometry, cycleViewBox } from '../lib/figure-geometry'
 import { Frame, Pose, sampleCycle } from '../lib/pose'
 
 interface FigureProps {
@@ -69,13 +69,21 @@ export default function Figure({
 
   const { layers } = buildGeometry(pose, { facing })
 
+  // Crop to the movement rather than to a fixed box. A standing figure used barely a
+  // third of the old 100x104 box, which is why every thumbnail was unreadable. Sampling
+  // the whole cycle keeps the crop still while the figure moves inside it.
+  const viewBox = useMemo(
+    () => cycleViewBox(Array.from({ length: 18 }, (_, i) => sampleCycle(frames, i / 18)), { facing }),
+    [frames, facing],
+  )
+
   return (
     <svg
       className={`figure ${className ?? ''}`}
-      viewBox="0 0 100 104"
+      viewBox={viewBox}
       role="img"
       aria-hidden="true"
-      preserveAspectRatio="xMidYMax meet"
+      preserveAspectRatio="xMidYMid meet"
     >
       <g transform={flip ? 'translate(100,0) scale(-1,1)' : undefined}>
         {layers.map((layer, i) =>

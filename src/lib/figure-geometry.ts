@@ -306,9 +306,82 @@ function ellipse(cx: number, cy: number, rx: number, ry: number, n = 20): Pt[] {
   return pts
 }
 
+export interface Bounds {
+  minX: number
+  minY: number
+  maxX: number
+  maxY: number
+}
+
 export interface Geometry {
   layers: Layer[]
   skeleton: Skeleton
+  /** Drawn extent of this pose, ground line excluded. */
+  bounds: Bounds
+}
+
+/**
+ * How far the drawing reaches beyond each joint: the widest half-width that meets there
+ * plus the ring stroke. One value for all of them wastes most of a crop, because a wrist
+ * needs four units of room and a shoulder needs ten.
+ */
+const RING = 2.4
+const PAD = {
+  torsoSide: 6.2 + RING,
+  torsoFront: 8.6 + RING,
+  bend: 4.8 + RING,
+  tip: 2.6 + RING,
+  head: 6.0 + RING,
+}
+
+function poseBounds(s: Skeleton, front: boolean): Bounds {
+  const torso = front ? PAD.torsoFront : PAD.torsoSide
+  const at: [Pt, number][] = [
+    [s.pelvis, torso], [s.chest, torso], [s.neck, torso],
+    [s.elbowL, PAD.bend], [s.elbowR, PAD.bend],
+    [s.kneeL, PAD.bend], [s.kneeR, PAD.bend],
+    [s.handL, PAD.tip], [s.handR, PAD.tip],
+    [s.ankleL, PAD.tip], [s.ankleR, PAD.tip],
+    [s.toeL, PAD.tip], [s.toeR, PAD.tip],
+    [s.head, PAD.head],
+  ]
+  let minX = Infinity
+  let minY = Infinity
+  let maxX = -Infinity
+  let maxY = -Infinity
+  for (const [j, pad] of at) {
+    minX = Math.min(minX, j.x - pad)
+    maxX = Math.max(maxX, j.x + pad)
+    minY = Math.min(minY, j.y - pad)
+    maxY = Math.max(maxY, j.y + pad)
+  }
+  return { minX, minY, maxX, maxY }
+}
+
+/**
+ * Union of the drawn extent over a whole cycle, as a view box string.
+ *
+ * Framing has to be computed across every frame, not per frame: crop each frame to
+ * itself and the figure swells and shrinks as it moves, which is far worse than the
+ * dead space it fixes. The ground line is folded in whenever the figure is near it, so a
+ * standing pose keeps its floor and a supine one is not pushed off centre by it.
+ */
+export function cycleViewBox(poses: Pose[], opts: GeometryOptions = {}): string {
+  const front = (opts.facing ?? 'side') === 'front'
+  let b: Bounds = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }
+  for (const pose of poses) {
+    const pb = poseBounds(solve(pose), front)
+    b = {
+      minX: Math.min(b.minX, pb.minX),
+      minY: Math.min(b.minY, pb.minY),
+      maxX: Math.max(b.maxX, pb.maxX),
+      maxY: Math.max(b.maxY, pb.maxY),
+    }
+  }
+  if (b.maxY > GROUND - 14) b.maxY = Math.max(b.maxY, GROUND + 3.5)
+  const w = b.maxX - b.minX
+  const h = b.maxY - b.minY
+  return `${b.minX.toFixed(1)} ${b.minY.toFixed(1)} ${w.toFixed(1)} ${h.toFixed(1)}`
 }
 
 export function buildGeometry(pose: Pose, opts: GeometryOptions = {}): Geometry {
@@ -356,14 +429,16 @@ export function buildGeometry(pose: Pose, opts: GeometryOptions = {}): Geometry 
     {
       role: 'ground',
       far: false,
+      // Runs far wider than any pose: the view box is cropped to the figure, so a line
+      // sized to the old 0..100 box would stop short inside the frame.
       shapes: [
         {
           kind: 'path',
           d: closedPath([
-            { x: 4, y: GROUND + 1.4 },
-            { x: 96, y: GROUND + 1.4 },
-            { x: 96, y: GROUND + 2.5 },
-            { x: 4, y: GROUND + 2.5 },
+            { x: -400, y: GROUND + 1.4 },
+            { x: 500, y: GROUND + 1.4 },
+            { x: 500, y: GROUND + 2.5 },
+            { x: -400, y: GROUND + 2.5 },
           ]),
         },
       ],
@@ -409,7 +484,7 @@ export function buildGeometry(pose: Pose, opts: GeometryOptions = {}): Geometry 
     { role: 'skin', far: false, shapes: [near.arm] },
   ]
 
-  return { layers, skeleton: s }
+  return { layers, skeleton: s, bounds: poseBounds(s, front) }
 }
 
 /** Serialise a point list for SVG. Kept for callers that still draw polygons. */

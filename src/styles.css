@@ -463,9 +463,11 @@ a {
   background: var(--surface-2);
 }
 
+/* Portrait, because a standing figure is roughly one to two and a square box caps it at
+   the box height however well the drawing is cropped. */
 .rowitem__thumb {
-  width: 52px;
-  height: 52px;
+  width: 48px;
+  height: 64px;
   border-radius: 11px;
   background: var(--surface-3);
   flex: none;

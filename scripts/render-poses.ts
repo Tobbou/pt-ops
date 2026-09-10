@@ -21,7 +21,7 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { Exercise } from '../src/data/exercises/types'
-import { Layer, buildGeometry } from '../src/lib/figure-geometry'
+import { Layer, buildGeometry, cycleViewBox } from '../src/lib/figure-geometry'
 import { Frame, Pose, sampleCycle } from '../src/lib/pose'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
@@ -77,16 +77,24 @@ function layerSvg(layer: Layer, ring: boolean): string {
 }
 
 /** One figure as an SVG fragment positioned at (x, y) with the given cell size. */
-function figureCell(pose: Pose, ex: Exercise, x: number, y: number, size: number, boxed: boolean): string {
+function figureCell(
+  pose: Pose,
+  ex: Exercise,
+  x: number,
+  y: number,
+  size: number,
+  boxed: boolean,
+  viewBox: string,
+): string {
   const { layers } = buildGeometry(pose, { facing: ex.facing })
   const inner = layers
     .map((l) => (l.role === 'ground' || l.role === 'shadow' ? layerSvg(l, false) : layerSvg(l, true) + layerSvg(l, false)))
     .join('')
-  const scale = size / 104
   const frame = boxed
     ? `<rect x="${x}" y="${y}" width="${size}" height="${size}" rx="6" fill="${COLOURS.stage}" stroke="${COLOURS.boxed}" stroke-width="1.5"/>`
     : `<rect x="${x}" y="${y}" width="${size}" height="${size}" rx="6" fill="${COLOURS.stage}"/>`
-  return `${frame}<g transform="translate(${x} ${y}) scale(${scale})">${inner}</g>`
+  // A nested svg reproduces the app's cropping exactly, clipping included.
+  return `${frame}<svg x="${x}" y="${y}" width="${size}" height="${size}" viewBox="${viewBox}" preserveAspectRatio="xMidYMid meet">${inner}</svg>`
 }
 
 /** Keyframes plus in-betweens, in cycle order, flagged so the sheet can box the keyframes. */
@@ -129,7 +137,11 @@ function sheet(exercises: Exercise[], title: string, between: number, cell: numb
 
   const bands = exercises.map((ex) => {
     const cells = samples(ex.frames, between)
-    return { ex, cells, rows: Math.ceil(cells.length / cols) }
+    const viewBox = cycleViewBox(
+      Array.from({ length: 18 }, (_, i) => sampleCycle(ex.frames, i / 18)),
+      { facing: ex.facing },
+    )
+    return { ex, cells, viewBox, rows: Math.ceil(cells.length / cols) }
   })
 
   let y = pad + headerH
@@ -144,7 +156,7 @@ function sheet(exercises: Exercise[], title: string, between: number, cell: numb
     band.cells.forEach((s, i) => {
       const cx = pad + labelW + (i % cols) * (cell + gap)
       const cy = y + Math.floor(i / cols) * (cell + gap)
-      parts.push(figureCell(s.pose, band.ex, cx, cy, cell, s.key))
+      parts.push(figureCell(s.pose, band.ex, cx, cy, cell, s.key, band.viewBox))
     })
     y += band.rows * (cell + gap) + 10
   }
