@@ -106,10 +106,15 @@ document.getElementById('light').addEventListener('input', (e) => {
   rim.intensity = 1.4 * v
   ambient.intensity = 0.22 * v
 })
-document.getElementById('pose').addEventListener('click', () => {
-  // Nothing is animated yet; this is a placeholder for the clip switcher once the
-  // exercise animations are built.
-  stat.textContent = 'no animation clips in this build yet'
+// A dark-clothed character on the app's near-black stage reads as a blob however hard
+// it is lit, so the stage colour is part of judging a character, not a detail to settle
+// later. These are the app's current stage and a lighter alternative.
+const STAGES = ['#0d1117', '#39434f', '#8d96a3']
+let stageIndex = 0
+document.getElementById('bg').addEventListener('click', (e) => {
+  stageIndex = (stageIndex + 1) % STAGES.length
+  scene.background = new Color(STAGES[stageIndex])
+  e.currentTarget.textContent = `Stage: ${['dark', 'mid', 'light'][stageIndex]}`
 })
 
 function resize() {
