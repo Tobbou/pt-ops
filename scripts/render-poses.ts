@@ -8,6 +8,7 @@
  *   npx tsx scripts/render-poses.ts --category push              -> out/poses/push.png
  *   npx tsx scripts/render-poses.ts --exercise push-up            -> out/poses/push-up.png
  *   npx tsx scripts/render-poses.ts --category all                -> one sheet per category
+ *   npx tsx scripts/render-poses.ts --file mocap/scratch.ts       -> any module exporting Exercise[]
  *   npx tsx scripts/render-poses.ts --exercise push-up --samples 12 --cols 8
  *
  * A category sheet shows every exercise as one row: the authored keyframes (boxed) with
@@ -161,17 +162,30 @@ function writePng(svg: string, file: string): void {
   console.log(`${file}  (${Math.round(png.length / 1024)} KB)`)
 }
 
-async function loadCategory(cat: string): Promise<Exercise[]> {
-  const mod = (await import(`../src/data/exercises/${CATEGORY_FILES[cat]}.ts`)) as Record<string, Exercise[]>
-  const list = Object.values(mod).find((v) => Array.isArray(v))
-  if (!list) throw new Error(`No exercise array exported from ${cat}.ts`)
+async function loadModule(spec: string): Promise<Exercise[]> {
+  const mod = (await import(spec)) as Record<string, unknown>
+  const list = Object.values(mod).find((v) => Array.isArray(v)) as Exercise[] | undefined
+  if (!list) throw new Error(`No exercise array exported from ${spec}`)
   return list
+}
+
+async function loadCategory(cat: string): Promise<Exercise[]> {
+  return loadModule(`../src/data/exercises/${CATEGORY_FILES[cat]}.ts`)
 }
 
 async function main() {
   const between = Number(opt('samples') ?? (opt('exercise') ? 5 : 2))
   const cell = Number(opt('cell') ?? (opt('exercise') ? 200 : 110))
   const cols = Number(opt('cols') ?? (opt('exercise') ? 8 : 14))
+
+  // --file renders any module exporting an Exercise[]. Used to review a motion capture
+  // before adopting it into a category file.
+  const file = opt('file')
+  if (file) {
+    const list = await loadModule(file.startsWith('.') ? file : `../${file}`)
+    writePng(sheet(list, file, between, cell, cols), join(outDir, 'scratch.png'))
+    return
+  }
 
   if (opt('exercise')) {
     const id = opt('exercise') as string
