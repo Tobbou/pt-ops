@@ -11,7 +11,9 @@
     "icons": "node scripts/generate-icons.mjs",
     "poses": "tsx scripts/render-poses.ts --category all",
     "check:poses": "tsx scripts/check-poses.ts",
-    "typecheck": "tsc -b --noEmit"
+    "typecheck": "tsc -b --noEmit",
+    "character": "node scripts/build-character.mjs",
+    "character:preview": "vite --config tools/character-preview/vite.config.ts"
   },
   "dependencies": {
     "react": "^18.3.1",
@@ -22,7 +24,9 @@
     "@types/node": "^26.5.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
+    "@types/three": "^0.185.4",
     "@vitejs/plugin-react": "^4.3.4",
+    "three": "^0.186.0",
     "tsx": "^4.23.13",
     "typescript": "^5.6.3",
     "vite": "^5.4.11",

@@ -17,3 +17,10 @@ mocap/data/
 mocap/frames/
 mocap/frames.txt
 mocap/scratch.ts
+
+# Mixamo source downloads and everything built from them: large, and reproducible
+# from mixamo.com plus scripts/blender/. The shipped GLB lands in public/.
+assets/mixamo/character/
+assets/mixamo/animations/
+assets/build/
+tools/character-preview/character.glb
