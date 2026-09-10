@@ -95,7 +95,7 @@ export default function Today() {
                 </div>
                 {heroExercise && (
                   <div style={{ width: 78, flex: 'none' }}>
-                    <Figure frames={heroExercise.frames} />
+                    <Figure frames={heroExercise.frames} facing={heroExercise.facing} />
                   </div>
                 )}
               </div>
@@ -130,7 +130,7 @@ export default function Today() {
               return (
                 <button key={id} className="rowitem" onClick={() => navigate(`/workouts/${id}`)}>
                   <div className="rowitem__thumb">
-                    <Figure frames={ex.frames} />
+                    <Figure frames={ex.frames} facing={ex.facing} />
                   </div>
                   <div className="grow">
                     <div className="rowitem__title">{w.name}</div>

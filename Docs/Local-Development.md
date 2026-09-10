@@ -25,6 +25,8 @@ two behave the same.
 | `npm run preview` | Serve `dist/` on the network, service worker included |
 | `npm run typecheck` | Type check only |
 | `npm run icons` | Re-render the app icons from `scripts/generate-icons.mjs` |
+| `npm run poses` | Render every category's pose contact sheet to `out/poses/` |
+| `npm run check:poses` | Validate every animation numerically; non-zero exit on a defect |
 
 The service worker is disabled in dev (`devOptions.enabled: false`). Anything about offline
 behaviour, installability or update flow has to be tested against `npm run preview`.
@@ -46,10 +48,32 @@ of the preview server.
 
 ## The pose contact sheet
 
-`#/dev-poses` renders every exercise and every keyframe large, in a grid. It only exists in dev
-builds. Use it after touching `src/data/poses.ts`, `src/data/exercises.ts` or the rig itself: the
-poses are raw joint angles and the only reliable way to catch a limb bent the wrong way is to look
-at all of them.
+Two ways to look at the poses, which are raw joint angles and cannot be reviewed by reading them:
+
+```bash
+npx tsx scripts/render-poses.ts --category core              # out/poses/core.png
+npx tsx scripts/render-poses.ts --exercise sit-up --samples 8 # out/poses/sit-up.png
+```
+
+writes PNG contact sheets headless, with the authored keyframes boxed and the interpolated
+in-betweens after each, so both the poses and the motion are visible. Long sequences wrap;
+`--cols` sets the width. `#/dev-poses` in the dev server shows the same thing live and only
+exists in dev builds.
+
+Looking catches what is ugly. For what is *wrong*, run the validator:
+
+```bash
+npm run check:poses              # all 58, exits non-zero on a defect
+npx tsx scripts/check-poses.ts --category core --verbose
+```
+
+It samples each cycle at 240 points, not just the keyframes, because the in-betweens are where
+limbs sink through the floor. It checks floor penetration, joint range, contact drift, frame
+bounds and front-view symmetry. Contacts that legitimately relocate (a step, a jump, the
+inchworm walking out) are listed in `ACCEPTED_TRAVEL` in the script with their measured
+distance, so only a worsening fails. Use both tools after touching `src/data/poses.ts`,
+anything under `src/data/exercises/`, or the rig itself. The authoring checklist is in
+[Content.md](Content.md).
 
 ## Seeding a log for UI work
 

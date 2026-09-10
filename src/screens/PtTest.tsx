@@ -71,7 +71,7 @@ export default function PtTest() {
               <div className="card" key={e.id}>
                 <div className="row" style={{ alignItems: 'flex-start' }}>
                   <div style={{ width: 56, flex: 'none' }}>
-                    <Figure frames={getExercise(e.exercise).frames} />
+                    <Figure frames={getExercise(e.exercise).frames} facing={getExercise(e.exercise).facing} />
                   </div>
                   <div className="grow">
                     <div style={{ fontWeight: 700 }}>
@@ -286,7 +286,7 @@ function EventRunner({
       <TopBar title={`${eventIndex + 1}/${PT_EVENTS.length} · ${event.name}`} />
       <div className="stack stack--lg">
         <div className="figure-stage player__figure" style={{ height: '22vh' }}>
-          <Figure frames={exercise.frames} animated={running} cycle={exercise.cycle} />
+          <Figure frames={exercise.frames} animated={running} cycle={exercise.cycle} facing={exercise.facing} />
         </div>
 
         <TimerRing

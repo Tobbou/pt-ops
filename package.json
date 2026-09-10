@@ -9,6 +9,8 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview --host",
     "icons": "node scripts/generate-icons.mjs",
+    "poses": "tsx scripts/render-poses.ts --category all",
+    "check:poses": "tsx scripts/check-poses.ts",
     "typecheck": "tsc -b --noEmit"
   },
   "dependencies": {
@@ -21,6 +23,7 @@
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",
+    "tsx": "^4.23.13",
     "typescript": "^5.6.3",
     "vite": "^5.4.11",
     "vite-plugin-pwa": "^0.21.1"

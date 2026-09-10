@@ -19,45 +19,64 @@ turn that into what to do now, screens render it, and completing a session write
 
 ## The pose rig
 
-`src/lib/pose.ts` is a two-dimensional forward kinematics rig for a eleven-joint figure. It is the
-reason the app ships no exercise media.
+`src/lib/pose.ts` is a two-dimensional forward kinematics rig. It is the reason the app ships no
+exercise media.
 
 A **pose** is the pelvis position plus one angle per segment:
 
 ```ts
-{ px, py, torso, head, uaL, faL, thL, shL, ftL, uaR, faR, thR, shR, ftR }
+{ px, py, torso, spine, head, uaL, faL, thL, shL, ftL, uaR, faR, thR, shR, ftR }
 ```
 
-Conventions, which are what you need to author a new exercise:
+The chain: pelvis to chest (lower torso), chest to neck base (upper torso), neck base to head.
+Arms hang off the neck base, legs off the pelvis. Segment lengths are fixed in `SEG`.
+
+Conventions, which are what you need to author a new exercise (the full table and the realism
+checklist are in [Content.md](Content.md)):
 
 - Limb angles are **absolute**, not relative to the parent: `0` is straight down, `+90` right,
   `-90` left, `180` straight up. Absolute angles are far easier to reason about ("the forearm points
   forward" is `90`, whatever the upper arm is doing) and they make mirroring a sign flip.
 - The **torso** is the exception: `0` is upright, `+90` horizontal with the head to the right.
-- The figure faces **right** in side views. The `R` chain is drawn in the accent colour in front of
-  the body, the `L` chain in grey behind it, which is what gives a flat stick figure depth.
+- **`spine`** bends the upper torso relative to the lower (`+` rounds forward, `-` arches) and
+  **`head`** tilts the head relative to the upper torso (`+` nods). These are what let a crunch
+  round and a superman arch instead of hinging a plank at the hip.
+- The figure **faces +x when upright**. That fixes "front" for every lean, so a supine pose
+  (authored head-left) faces the ceiling and a prone pose (authored head-right) faces the floor. The
+  nose on the head is drawn on the front, so you can tell which is which at a glance. Author prone
+  exercises head-right.
+- The `R` chain is the **near** side, drawn in the accent colour in front of the body; the `L`
+  chain is the far side in grey behind it. An exercise seen head-on sets `facing: 'front'`, which
+  colours both chains alike and drops the nose.
 - `y` grows downwards, the ground line is at `y = 96`, and the view box is `0 0 100 104`.
-- In prone positions the "toe" segment is drawn as the raised heel (`ft ≈ -150`), because in a plank
-  the ball of the foot is the contact point and the heel is the visible part.
 
-`solve()` walks the chain into world coordinates, `lerpPose()` blends two poses, and
-`sampleCycle()` walks a list of frames on a loop with smoothstep easing and optional holds.
-`src/components/Figure.tsx` renders the result at about 33 fps, and only when `animated` is set:
-lists render a static "signature" frame instead, so a screen of forty exercises is forty static
-SVGs rather than forty animation loops.
+`solve()` walks the chain into world coordinates. `sampleCycle()` walks a list of frames on a loop;
+each frame carries a duration weight `d`, an optional `hold`, and an **easing** for the transition
+into it (`inout`, `out`, `in`, `linear`, `snap`). That is how a push-up lowers slower than it rises
+and a jump leaves the ground abruptly: the eccentric and concentric halves get different weights
+and curves rather than one symmetric blend.
 
-Each layer is drawn twice, a dark ring first and the mark on top. Limbs cross constantly in a side
-view and without the ring an accent-coloured arm in front of an accent-coloured leg reads as one
-blob.
+`src/lib/figure-geometry.ts` turns a solved pose into shapes: tapered quads for limbs with a disc
+at each joint, a filled torso with width, a neck, a head with a nose, wedge feet. It is the single
+source of the figure's appearance, consumed by both `components/Figure.tsx` (React, for the app)
+and `scripts/render-poses.ts` (SVG string to PNG, for review). Every layer is drawn twice, a dark
+ring first and the fill on top, which gives the figure a seamless outline wherever an accent limb
+crosses another.
 
-**Anchor poses** in `src/data/poses.ts` (plank, push-up bottom, squat bottom, lunge, supine, prone)
-were solved so that contact points hold still across a repetition: in a push-up the hands and toes
-do not move, only the joints fold. An exercise then overrides a handful of numbers from an anchor
-rather than starting from scratch. Getting this wrong is what makes an animation look like a figure
-sliding across the floor.
+`Figure.tsx` animates at about 33 fps, and only when `animated` is set: lists render a static
+"signature" frame instead, so a screen of forty exercises is forty static SVGs rather than forty
+animation loops.
 
-To check your work, run the dev server and open `#/dev-poses`: a contact sheet of every exercise
-and every keyframe, drawn large. It is compiled out of production builds.
+**Anchor poses** in `src/data/poses.ts` (plank, push-up bottom, squat bottom, lunge, supine,
+prone) were solved so that contact points hold still across a repetition: in a push-up the hands
+and toes do not move, only the joints fold. An exercise then overrides a handful of numbers from an
+anchor rather than starting from scratch. Getting this wrong is what makes an animation look like a
+figure sliding across the floor.
+
+To check your work, `npx tsx scripts/render-poses.ts --category core` writes a contact sheet with
+every exercise, every keyframe and the interpolated in-betweens to `out/poses/`, and
+`--exercise <id>` writes one large strip. It is the same geometry the phone draws. The dev server
+also serves the sheet live at `#/dev-poses`; that route is compiled out of production builds.
 
 ## The workout model
 

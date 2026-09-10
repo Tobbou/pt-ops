@@ -61,7 +61,7 @@ export function WorkoutList() {
                   </div>
                 </div>
                 <div style={{ width: 64, flex: 'none' }}>
-                  <Figure frames={ex.frames} />
+                  <Figure frames={ex.frames} facing={ex.facing} />
                 </div>
               </div>
             </button>
@@ -193,7 +193,7 @@ export function WorkoutDetail({ id, path }: { id: string; path: string }) {
                   style={{ padding: 8 }}
                   onClick={() => navigate(`/exercises/${exId}`)}
                 >
-                  <Figure frames={ex.frames} />
+                  <Figure frames={ex.frames} facing={ex.facing} />
                   <div className="small" style={{ marginTop: 4, lineHeight: 1.2 }}>
                     {ex.name}
                   </div>

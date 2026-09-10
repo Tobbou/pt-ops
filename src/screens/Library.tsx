@@ -53,7 +53,7 @@ export function ExerciseList() {
         {shown.map((e) => (
           <button key={e.id} className="rowitem" onClick={() => navigate(`/exercises/${e.id}`)}>
             <div className="rowitem__thumb">
-              <Figure frames={e.frames} />
+              <Figure frames={e.frames} facing={e.facing} />
             </div>
             <div className="grow">
               <div className="rowitem__title">{e.name}</div>
@@ -90,7 +90,7 @@ export function ExerciseDetail({ id }: { id: string }) {
       <TopBar title={exercise.name} back="/exercises" />
       <div className="stack stack--lg">
         <div className="figure-stage" style={{ padding: 12 }}>
-          <Figure frames={exercise.frames} animated={playing} cycle={exercise.cycle} />
+          <Figure frames={exercise.frames} animated={playing} cycle={exercise.cycle} facing={exercise.facing} />
         </div>
 
         <Segmented

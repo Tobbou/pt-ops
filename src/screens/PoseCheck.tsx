@@ -22,7 +22,7 @@ export default function PoseCheck() {
           <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
             {ex.frames.map((f, i) => (
               <div key={i} className="figure-stage" style={{ flex: 1, minWidth: 0 }}>
-                <Figure frames={[f]} still={0} />
+                <Figure frames={[f]} still={0} facing={ex.facing} />
               </div>
             ))}
           </div>

@@ -503,46 +503,45 @@ a {
   height: auto;
 }
 
-.figure .fig-body line,
-.figure .fig-front line,
-.figure .fig-back line {
-  stroke-linecap: round;
-}
-
-.figure .fig-ring line,
+/*
+ * Every layer is drawn twice: a ring in the stage colour, then the fill. The ring's
+ * stroke expands the layer's silhouette by a hair, which is what separates an accent
+ * limb from an accent limb behind it.
+ */
+.figure .fig-ring polygon,
 .figure .fig-ring circle {
-  stroke: #10151c;
   fill: #10151c;
-  stroke-linecap: round;
+  stroke: #10151c;
+  stroke-width: 2.4;
+  stroke-linejoin: round;
 }
 
-.figure .fig-body line {
-  stroke: var(--text);
-}
-
+.figure .fig-body polygon,
 .figure .fig-body circle {
   fill: var(--text);
 }
 
-.figure .fig-front line {
-  stroke: var(--accent);
+.figure .fig-near polygon,
+.figure .fig-near circle {
+  fill: var(--accent);
 }
 
-.figure .fig-back line {
-  stroke: #55606f;
+.figure .fig-far polygon,
+.figure .fig-far circle {
+  fill: #5b6675;
 }
 
-.figure .fig-shadow {
+.figure .fig-shadow polygon {
   fill: #000;
 }
 
-.figure .fig-ground {
-  stroke: var(--line);
-  stroke-linecap: round;
+.figure .fig-ground polygon {
+  fill: var(--line);
 }
 
-.figure--rest .fig-front line {
-  stroke: var(--rest);
+.figure--rest .fig-near polygon,
+.figure--rest .fig-near circle {
+  fill: var(--rest);
 }
 
 .figure-stage {

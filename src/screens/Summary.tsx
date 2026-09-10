@@ -79,7 +79,7 @@ export default function Summary({ id }: { id: string }) {
               return (
                 <button key={exId} className="rowitem" onClick={() => navigate(`/exercises/${exId}`)}>
                   <div className="rowitem__thumb">
-                    <Figure frames={ex.frames} />
+                    <Figure frames={ex.frames} facing={ex.facing} />
                   </div>
                   <div className="grow">
                     <div className="rowitem__title">{ex.name}</div>

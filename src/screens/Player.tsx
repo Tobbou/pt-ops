@@ -304,6 +304,7 @@ export default function Player({ workoutId, path }: { workoutId: string; path: s
               frames={exercise.frames}
               animated={phase === 'running' && !resting}
               cycle={exercise.cycle}
+              facing={exercise.facing}
               className={resting ? 'figure--rest' : ''}
             />
           )}

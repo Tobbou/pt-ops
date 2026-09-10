@@ -12,8 +12,9 @@ no account, no backend and no network traffic after the first load.
 ## Why it is built this way
 
 - **No images or video.** Every exercise animation is drawn from joint angles by a small forward
-  kinematics rig ([src/lib/pose.ts](src/lib/pose.ts)). An exercise is a handful of numbers, which is
-  what lets the whole app precache to under 300 KB and run in flight mode.
+  kinematics rig ([src/lib/pose.ts](src/lib/pose.ts)) with a bending spine and per-transition
+  easing. An exercise is a few dozen numbers, which is what lets the whole app precache to under
+  300 KB and run in flight mode.
 - **No backend.** The training log is a few kilobytes of JSON in `localStorage`. That removes
   hosting cost, sign-in, and a privacy policy, at the price of the log being tied to one browser
   profile; Settings has export and restore for that.
@@ -37,13 +38,13 @@ no account, no backend and no network traffic after the first load.
 
 ```
 src/
-  lib/          pose rig, router, audio cues, wake lock, formatting, plan logic
-  data/         exercises (58), workouts (12), plans (3), PT test standards
+  lib/          pose rig + figure geometry, router, audio cues, wake lock, formatting, plan logic
+  data/         exercises (58, one file per category), workouts (12), plans (3), PT test standards
   state/        the single persisted store
   components/   Figure, charts, shared UI
   screens/      Today, Plans, Workouts, Player, Progress, Library, PT Test, Settings
-scripts/        icon generation
-Docs/           architecture, local development, configuration, operations
+scripts/        icon generation, pose contact-sheet renderer
+Docs/           architecture, local development, configuration, operations, content authoring
 ```
 
 ## Quick start

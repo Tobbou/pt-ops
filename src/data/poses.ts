@@ -182,20 +182,24 @@ export const SUPINE_FLAT: Pose = p({
   ftR: 20,
 })
 
-/** Lying face down, arms overhead and legs on the floor: the bottom of a superman. */
+/**
+ * Lying face down, head to the RIGHT, arms overhead along the floor: the bottom of a
+ * superman. Prone poses are authored head-right so the face points at the floor; supine
+ * poses are head-left so it points at the ceiling. See the facing note in lib/pose.ts.
+ */
 export const PRONE_FLAT: Pose = p({
-  px: 62,
+  px: 38,
   py: 90,
-  torso: -92,
-  head: -6,
-  uaL: -96,
-  faL: -94,
-  thL: 90,
-  shL: 90,
-  ftL: 20,
-  uaR: -94,
-  faR: -92,
-  thR: 92,
-  shR: 92,
-  ftR: 20,
+  torso: 92,
+  head: 6,
+  uaL: 96,
+  faL: 94,
+  thL: -90,
+  shL: -90,
+  ftL: -20,
+  uaR: 94,
+  faR: 92,
+  thR: -92,
+  shR: -92,
+  ftR: -20,
 })
