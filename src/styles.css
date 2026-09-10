@@ -505,43 +505,59 @@ a {
 
 /*
  * Every layer is drawn twice: a ring in the stage colour, then the fill. The ring's
- * stroke expands the layer's silhouette by a hair, which is what separates an accent
- * limb from an accent limb behind it.
+ * stroke expands the layer's silhouette by a hair, which is what separates a near arm
+ * from the torso behind it without drawing an outline.
+ *
+ * The far side of the body is the same shapes in a shaded palette. Keeping it the same
+ * hues, only darker, reads as one body in light rather than two colours of limb.
+ * scripts/render-poses.ts carries a copy of these values; change both together.
  */
-.figure .fig-ring polygon,
+.figure .fig-ring path,
 .figure .fig-ring circle {
   fill: #10151c;
   stroke: #10151c;
-  stroke-width: 2.4;
+  stroke-width: 2.2;
   stroke-linejoin: round;
 }
 
-.figure .fig-body polygon,
-.figure .fig-body circle {
-  fill: var(--text);
+.figure .fig-skin path {
+  fill: #dfe6ee;
 }
 
-.figure .fig-near polygon,
-.figure .fig-near circle {
+.figure .fig-skin.fig-far path {
+  fill: #8b96a3;
+}
+
+.figure .fig-vest path {
   fill: var(--accent);
 }
 
-.figure .fig-far polygon,
-.figure .fig-far circle {
-  fill: #5b6675;
+.figure .fig-vest.fig-far path {
+  fill: #63762a;
 }
 
-.figure .fig-shadow polygon {
+.figure .fig-shorts path {
+  fill: #2f3a49;
+}
+
+.figure .fig-shorts.fig-far path {
+  fill: #232b36;
+}
+
+.figure .fig-shadow path {
   fill: #000;
 }
 
-.figure .fig-ground polygon {
+.figure .fig-ground path {
   fill: var(--line);
 }
 
-.figure--rest .fig-near polygon,
-.figure--rest .fig-near circle {
+.figure--rest .fig-vest path {
   fill: var(--rest);
+}
+
+.figure--rest .fig-vest.fig-far path {
+  fill: #2f6a90;
 }
 
 .figure-stage {

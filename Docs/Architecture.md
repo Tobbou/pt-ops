@@ -56,12 +56,35 @@ into it (`inout`, `out`, `in`, `linear`, `snap`). That is how a push-up lowers s
 and a jump leaves the ground abruptly: the eccentric and concentric halves get different weights
 and curves rather than one symmetric blend.
 
-`src/lib/figure-geometry.ts` turns a solved pose into shapes: tapered quads for limbs with a disc
-at each joint, a filled torso with width, a neck, a head with a nose, wedge feet. It is the single
-source of the figure's appearance, consumed by both `components/Figure.tsx` (React, for the app)
-and `scripts/render-poses.ts` (SVG string to PNG, for review). Every layer is drawn twice, a dark
-ring first and the fill on top, which gives the figure a seamless outline wherever an accent limb
-crosses another.
+`src/lib/figure-geometry.ts` turns a solved pose into shapes. It is the single source of the
+figure's appearance, consumed by both `components/Figure.tsx` (React, for the app) and
+`scripts/render-poses.ts` (SVG string to PNG, for review), so the sheet you review is what the
+phone draws.
+
+The figure is a set of smooth silhouettes, not tubes joined at discs. Each part is one closed
+outline: walk its bone chain, offset a **width profile** to either side, smooth the result through
+Catmull-Rom beziers. Three things do most of the work in making it read as a person rather than a
+diagram:
+
+- **A width profile per part**, not a linear taper. A deltoid at the shoulder, a biceps belly, a
+  narrow elbow, a forearm belly, a narrow wrist; on the leg, the calf bulge is what stops a shin
+  looking like a stick.
+- **Asymmetric front and back offsets on the torso**, so in profile the chest carries forward and
+  the seat carries back. A symmetric torso reads as a sausage whatever width you give it. The
+  offsets are anchored to `skeleton.front` so the chest stays on the chest side however the body
+  leans.
+- **Clothing.** A vest and shorts drawn over the body from the same outlines, clipped to a range
+  along the chain. They cost nothing and turn an abstract silhouette into a man dressed for
+  training, which is most of the perceived realism.
+
+The far side of the body is the same shapes in a shaded palette rather than a different colour, so
+it reads as one body in light. Every layer is drawn twice, a dark ring first and the fill on top,
+which separates a near limb from the torso behind it without an outline. Face-on exercises draw the
+arms and legs from the shoulder and hip rather than the midline, since the rig hangs both chains
+from a single point; the offset is horizontal only, so ground contacts keep their height.
+
+The colour values are duplicated in `scripts/render-poses.ts`, which cannot read the stylesheet.
+Change both together.
 
 `Figure.tsx` animates at about 33 fps, and only when `animated` is set: lists render a static
 "signature" frame instead, so a screen of forty exercises is forty static SVGs rather than forty

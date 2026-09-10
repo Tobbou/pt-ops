@@ -21,7 +21,7 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { Exercise } from '../src/data/exercises/types'
-import { Layer, buildGeometry, polyPoints } from '../src/lib/figure-geometry'
+import { Layer, buildGeometry } from '../src/lib/figure-geometry'
 import { Frame, Pose, sampleCycle } from '../src/lib/pose'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
@@ -43,11 +43,16 @@ const CATEGORY_FILES: Record<string, string> = {
   cooldown: 'cooldown',
 }
 
+// Must track the .fig-* rules in src/styles.css, or the contact sheet stops matching
+// what the app draws.
 const COLOURS = {
   ring: '#10151c',
-  body: '#e8eef5',
-  near: '#9dbb3a',
-  far: '#5b6675',
+  skin: '#dfe6ee',
+  skinFar: '#8b96a3',
+  vest: '#9dbb3a',
+  vestFar: '#63762a',
+  shorts: '#2f3a49',
+  shortsFar: '#232b36',
   ground: '#29323f',
   shadow: '#000000',
   stage: '#151c26',
@@ -57,13 +62,14 @@ const COLOURS = {
 }
 
 function layerSvg(layer: Layer, ring: boolean): string {
-  const fill = ring ? COLOURS.ring : COLOURS[layer.role]
-  const stroke = ring ? ` stroke="${COLOURS.ring}" stroke-width="2.4" stroke-linejoin="round"` : ''
+  const key = layer.far ? (`${layer.role}Far` as keyof typeof COLOURS) : (layer.role as keyof typeof COLOURS)
+  const fill = ring ? COLOURS.ring : COLOURS[key] ?? COLOURS[layer.role as keyof typeof COLOURS]
+  const stroke = ring ? ` stroke="${COLOURS.ring}" stroke-width="2.2" stroke-linejoin="round"` : ''
   const opacity = !ring && layer.opacity !== undefined ? ` opacity="${layer.opacity.toFixed(2)}"` : ''
   const shapes = layer.shapes
     .map((s) =>
-      s.kind === 'poly'
-        ? `<polygon points="${polyPoints(s.pts)}"/>`
+      s.kind === 'path'
+        ? `<path d="${s.d}"/>`
         : `<circle cx="${s.c.x.toFixed(2)}" cy="${s.c.y.toFixed(2)}" r="${s.r}"/>`,
     )
     .join('')

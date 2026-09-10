@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Facing, Layer, buildGeometry, polyPoints } from '../lib/figure-geometry'
+import { Facing, Layer, buildGeometry } from '../lib/figure-geometry'
 import { Frame, Pose, sampleCycle } from '../lib/pose'
 
 interface FigureProps {
@@ -19,12 +19,12 @@ interface FigureProps {
 
 /** Every layer is drawn twice: a dark ring first, then the fill. See figure-geometry. */
 function LayerShapes({ layer, ring }: { layer: Layer; ring: boolean }) {
-  const cls = ring ? 'fig-ring' : `fig-${layer.role}`
+  const cls = ring ? 'fig-ring' : `fig-${layer.role}${layer.far ? ' fig-far' : ''}`
   return (
     <g className={cls} opacity={!ring && layer.opacity !== undefined ? layer.opacity : undefined}>
       {layer.shapes.map((s, i) =>
-        s.kind === 'poly' ? (
-          <polygon key={i} points={polyPoints(s.pts)} />
+        s.kind === 'path' ? (
+          <path key={i} d={s.d} />
         ) : (
           <circle key={i} cx={s.c.x.toFixed(2)} cy={s.c.y.toFixed(2)} r={s.r} />
         ),
